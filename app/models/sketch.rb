@@ -16,4 +16,6 @@ class Sketch < ApplicationRecord
   belongs_to :user
 
   validates_with SketchValidator
+  validates :width, numericality: {greater_than_or_equal_to:1}
+  validates :height, numericality: {greater_than_or_equal_to:1}
 end
