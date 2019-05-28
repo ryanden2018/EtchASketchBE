@@ -16,6 +16,8 @@ ActiveRecord::Schema.define(version: 2019_05_27_193756) do
     t.integer "user_id"
     t.integer "width"
     t.integer "height"
+    t.integer "pointerX"
+    t.integer "pointerY"
     t.string "data"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false

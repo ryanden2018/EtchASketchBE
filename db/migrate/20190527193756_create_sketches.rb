@@ -4,6 +4,8 @@ class CreateSketches < ActiveRecord::Migration[5.2]
       t.integer :user_id
       t.integer :width
       t.integer :height
+      t.integer :pointerX
+      t.integer :pointerY
       t.string :data
 
       t.timestamps
