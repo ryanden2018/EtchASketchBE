@@ -6,7 +6,7 @@ class Api::V1::SketchesController < ApplicationController
 
   def show
     @sketch = Sketch.find(params[:id])
-    render json: @sketch
+    render json: @sketch.to_json
   end
 
   def update
@@ -38,10 +38,10 @@ class Api::V1::SketchesController < ApplicationController
   private
 
   def sketch_params
-    params.permit(:user_id,:width,:height,:data)
+    params.permit(:user_id,:width,:height,:data,:pointerX,:pointerY)
   end
 
   def all_sketches_without_data
-    return Sketch.select(:id,:user_id,:width,:height,:created_at,:updated_at)
+    return Sketch.select(:id,:user_id,:width,:height,:pointerX,:pointerY,:created_at,:updated_at)
   end
 end
