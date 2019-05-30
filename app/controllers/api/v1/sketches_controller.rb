@@ -29,7 +29,7 @@ class Api::V1::SketchesController < ApplicationController
   end
 
   def destroy
-    @sketch = User.find(params[:id])
+    @sketch = Sketch.find(params[:id])
     @sketch.destroy
     @sketches = all_sketches_without_data
     render json: @sketches.to_json
