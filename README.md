@@ -18,13 +18,15 @@ change the following lines
 
 ./config/database.yml
 
-```default: &default
+```ruby 
+default: &default
   adapter: postgresql
   encoding: unicode
   
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
   password: <YOUR PASSWORD>
-  username: postgres```
+  username: postgres
+  ```
 
 3) run this terminal commands
 bundle install
