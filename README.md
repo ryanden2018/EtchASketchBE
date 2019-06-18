@@ -28,11 +28,13 @@ default: &default
   username: postgres
   ```
 
-3) run this terminal commands
+3) run these terminal commands
+```
 bundle install
 rails db:create
 rails db:migrate
 rails s
+```
 
 Your Back-end is now ready to server the front end.
 Get the Front end here:
