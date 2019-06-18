@@ -18,14 +18,13 @@ change the following lines
 
 ./config/database.yml
 
-default: &default
+```default: &default
   adapter: postgresql
   encoding: unicode
-  # For details on connection pooling, see Rails configuration guide
-  # http://guides.rubyonrails.org/configuring.html#database-pooling
+  
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
   password: <YOUR PASSWORD>
-  username: postgres
+  username: postgres```
 
 3) run this terminal commands
 bundle install
