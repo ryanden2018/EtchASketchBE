@@ -180,7 +180,7 @@ function patchSketch(sketchId) {
 // delete current sketch
 function deleteSketch(sketchId) {
   return fetch(`${baseUrl}/sketches/${sketchId}`, { method:"DELETE",
-  'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content });
+  headers:{'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content } });
 }
 
 
@@ -300,7 +300,7 @@ deleteButton.addEventListener("click",e=>{
 
 let deleteUserButton = document.querySelector("#deleteUserButton");
 deleteUserButton.addEventListener("click",e=>{
-  fetch(`${baseUrl}/users/${curUserId}`,{method:"DELETE",'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content}).then(res=>{
+  fetch(`${baseUrl}/users/${curUserId}`,{method:"DELETE",headers:{'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content}}).then(res=>{
     setTimeout(getUsers,3000);
   });
   curUserId = null;
@@ -312,8 +312,7 @@ userCreateButton.addEventListener("click", e=>{
   e.preventDefault();
   let username = document.querySelector("#userCreate").value;
   document.querySelector("#userCreate").value = "";
-  fetch(`${baseUrl}/users`, {method:"POST",'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
-    headers:{"Content-Type":"application/json"},
+  fetch(`${baseUrl}/users`, {method:"POST",headers:{'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,"Content-Type":"application/json"},
     body:JSON.stringify({username:username}) })
   .then( res =>  setTimeout( getUsers, 3000 ) );
   document.querySelector("#sketchesDropdown").innerHTML = "";
