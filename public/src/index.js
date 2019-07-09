@@ -160,7 +160,8 @@ function postSketch(userId) {
   return fetch(`${baseUrl}/sketches`, {
     method: 'POST',
     headers: {'Content-Type': 'application/json',
-              'Accept': 'application/json' },
+              'Accept': 'application/json',
+              'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content },
     body: JSON.stringify( Object.assign(pageSketch.generateData(),{user_id:userId}) )
   })
 }
@@ -170,14 +171,16 @@ function patchSketch(sketchId) {
   return fetch(`${baseUrl}/sketches/${sketchId}`, {
     method:'PATCH',
     headers:{'Content-Type':'application/json',
-            'Accept':'application/json' },
+            'Accept':'application/json',
+            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content },
     body: JSON.stringify( pageSketch.generateData() )
   });
 }
 
 // delete current sketch
 function deleteSketch(sketchId) {
-  return fetch(`${baseUrl}/sketches/${sketchId}`, { method:"DELETE" });
+  return fetch(`${baseUrl}/sketches/${sketchId}`, { method:"DELETE",
+  'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content });
 }
 
 
@@ -297,7 +300,7 @@ deleteButton.addEventListener("click",e=>{
 
 let deleteUserButton = document.querySelector("#deleteUserButton");
 deleteUserButton.addEventListener("click",e=>{
-  fetch(`${baseUrl}/users/${curUserId}`,{method:"DELETE"}).then(res=>{
+  fetch(`${baseUrl}/users/${curUserId}`,{method:"DELETE",'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content}).then(res=>{
     setTimeout(getUsers,3000);
   });
   curUserId = null;
@@ -309,7 +312,7 @@ userCreateButton.addEventListener("click", e=>{
   e.preventDefault();
   let username = document.querySelector("#userCreate").value;
   document.querySelector("#userCreate").value = "";
-  fetch(`${baseUrl}/users`, {method:"POST",
+  fetch(`${baseUrl}/users`, {method:"POST",'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
     headers:{"Content-Type":"application/json"},
     body:JSON.stringify({username:username}) })
   .then( res =>  setTimeout( getUsers, 3000 ) );
