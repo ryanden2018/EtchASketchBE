@@ -162,7 +162,7 @@ function postSketch(userId) {
     headers: {'Content-Type': 'application/json',
               'Accept': 'application/json',
               'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content },
-    body: JSON.stringify( Object.assign(pageSketch.generateData(),{user_id:userId}) )
+    body: JSON.stringify( Object.assign(pageSketch.generateData(),{user_id:parseInt(userId)}) )
   })
 }
 
@@ -242,7 +242,7 @@ document.addEventListener('keyup',e=>{
 });
 
 function renderSketchesDropdown(userId) {
-  fetch(`${baseUrl}/users/${userId}`).then(res=>res.json())
+  fetch(`${baseUrl}/users/${parseInt(userId)}`).then(res=>res.json())
   .then(data=> {
     let sketchesDropdownDiv = document.querySelector("#sketchesDropdown")
     sketchesDropdownDiv.innerHTML = "";//FIXME
@@ -278,7 +278,7 @@ let updateButton = document.querySelector("#updateButton");
 updateButton.addEventListener("click",e=>{
   let sketchesDropdown = document.querySelector("#sketchesDropdown").children[0];
   if(sketchesDropdown.value === "new") {
-    postSketch(curUserId).then(data=>renderSketchesDropdown(curUserId));
+    postSketch(curUserId).then(data=>renderSketchesDropdown(parseInt(curUserId)));
   } else {
     let id = parseInt(sketchesDropdown.value);
     patchSketch(id);
@@ -290,7 +290,7 @@ deleteButton.addEventListener("click",e=>{
   let sketchesDropdown = document.querySelector("#sketchesDropdown").children[0];
   if(!(sketchesDropdown.value === "new")) {
     let id = parseInt(sketchesDropdown.value);
-    deleteSketch(id).then( data=>renderSketchesDropdown(curUserId));
+    deleteSketch(id).then( data=>renderSketchesDropdown(parseInt(curUserId)));
 
   }
   pageSketch.resetData({width:width,height:height,data:Sketch.zeroData(width,height),
@@ -300,7 +300,7 @@ deleteButton.addEventListener("click",e=>{
 
 let deleteUserButton = document.querySelector("#deleteUserButton");
 deleteUserButton.addEventListener("click",e=>{
-  fetch(`${baseUrl}/users/${curUserId}`,{method:"DELETE",headers:{'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content}}).then(res=>{
+  fetch(`${baseUrl}/users/${parseInt(curUserId)}`,{method:"DELETE",headers:{'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content}}).then(res=>{
     setTimeout(getUsers,3000);
   });
   curUserId = null;
@@ -310,7 +310,7 @@ deleteUserButton.addEventListener("click",e=>{
 let userCreateButton = document.querySelector("#userCreateButton");
 userCreateButton.addEventListener("click", e=>{
   e.preventDefault();
-  let username = document.querySelector("#userCreate").value;
+  let username = document.querySelector("#userCreate").value.replace(/[^a-zA-Z0-9]/g,"");
   document.querySelector("#userCreate").value = "";
   fetch(`${baseUrl}/users`, {method:"POST",headers:{'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,"Content-Type":"application/json"},
     body:JSON.stringify({username:username}) })
@@ -328,7 +328,7 @@ function getUsers() {
     fetch(`${baseUrl}/users`).then(res=>res.json()).then(obj=>{
       allUsers = obj
       allUsers.forEach(user=>{
-        dropDownMenu.innerHTML = dropDownMenu.innerHTML + `<a class="dropdown-item" href="#" data-id="${user.id}">${user.username}</a>`
+        dropDownMenu.innerHTML = dropDownMenu.innerHTML + `<a class="dropdown-item" href="#" data-id="${parseInt(user.id)}">${user.username.replace(/[^a-zA-Z0-9]/g,"")}</a>`
         
            // dropdown menu interactions--------------------------------------
         let allAs = document.querySelectorAll('a')
