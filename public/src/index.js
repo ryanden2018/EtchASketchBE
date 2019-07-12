@@ -1,3 +1,51 @@
+// knob rgb(186,189,182)
+// knob border rgb(46,52,54)
+
+
+class Knob {
+  constructor(context,xc,yc,radius, theta = -Math.PI/2.0) {
+    this.context = context;
+    this.xc = xc;
+    this.yc = yc;
+    this.radius = radius;
+    this.theta = theta;
+  }
+
+  draw() {
+    this.context.fillStyle = "rgb(46,52,54)";
+    this.context.beginPath();
+    this.context.arc(this.xc,this.yc,this.radius+2,0,2*Math.PI);
+    this.context.fill();
+
+    this.context.fillStyle = "rgb(186,189,182)";
+    this.context.beginPath();
+    this.context.arc(this.xc,this.yc,this.radius,0,2*Math.PI);
+    this.context.fill();
+
+    let startX = this.xc + 0.2*this.radius*Math.cos(this.theta);
+    let startY = this.yc + 0.2*this.radius*Math.sin(this.theta);
+    let endX = this.xc + 0.85*this.radius*Math.cos(this.theta);
+    let endY = this.yc + 0.85*this.radius*Math.sin(this.theta);
+    this.context.strokeStyle = "rgb(46,52,54)";
+    this.context.lineWidth=4;
+    this.context.beginPath();
+    this.context.moveTo(startX,startY);
+    this.context.lineTo(endX,endY);
+    this.context.stroke();
+
+    this.context.fillStyle = "rgb(46,52,54)";
+    this.context.beginPath();
+    this.context.arc(startX,startY,2,0,2*Math.PI);
+    this.context.fill();
+
+    this.context.fillStyle = "rgb(46,52,54)";
+    this.context.beginPath();
+    this.context.arc(endX,endY,2,0,2*Math.PI);
+    this.context.fill();
+  }
+}
+
+
 // Sketch class
 // holds data for a Sketch and provides rendering functionality
 
@@ -9,6 +57,17 @@ class Sketch {
     this.image = this.parseString(sketch.data);
     this.pointerX = sketch.pointerX;
     this.pointerY = sketch.pointerY;
+
+    this.canvas = document.querySelector("#es");
+    this.context = this.canvas.getContext('2d');
+    this.imgdata = this.context.createImageData(Sketch.pxw()*this.width, Sketch.pxh()*this.height)
+    this.context.fillStyle="#FF0000";
+    this.context.fillRect(0,0,954,684);
+
+    this.leftKnob = new Knob(this.context,65,619,48);
+    this.rightKnob = new Knob(this.context,889,619,48);
+    this.leftKnob.draw();
+    this.rightKnob.draw();
   }
 
   // reset the object to the properties of given sketch
@@ -19,18 +78,9 @@ class Sketch {
     this.pointerX = sketch.pointerX;
     this.pointerY = sketch.pointerY;
   }
-
-  static unsetColor() { return "grey"; }
-
-  static setColor() { return "black"; }
-
   static pxw() { return 2; }
 
   static pxh() { return 2; }
-
-  static pixelStyleString(i,j,color) {
-    return `position:absolute;width:${Sketch.pxw()}px;height:${Sketch.pxh()}px;top:${i*Sketch.pxh()}px;left:${j*Sketch.pxw()}px;background:${color}`;
-  }
 
   // return object which can be persisted to database
   generateData() {
@@ -74,70 +124,70 @@ class Sketch {
   // return a div containing representation of the image data
   // this should only be called once, see update()
   render() {
-    this.div = document.createElement("div");
-    this.div.style = `position:relative;width:${this.width*Sketch.pxw()}px;height:${this.height*Sketch.pxh()}px;background:${Sketch.unsetColor()};`;
-    this.div.id="gd"
-    
-    for( let i = 0; i < this.height; i++) {
-      for( let j = 0; j < this.width; j++) {
-        if(this.image[i][j] === 1) {
-          let pxDiv = document.createElement("div");
-          pxDiv.id = `p${i}_${j}`;
-          pxDiv.style = Sketch.pixelStyleString(i,j,Sketch.setColor());
-          this.div.append(pxDiv);
+    for(let i=0; i<Sketch.pxh()*this.height; i++) {
+      for(let j= 0; j < Sketch.pxw()*this.width; j++) {
+        let idx0 = (i*Sketch.pxw()*this.width+j)*4;
+        let val;
+        if( this.image[Math.floor(i/Sketch.pxh())][Math.floor(j/Sketch.pxw())] === 1) {
+          val = 0;
+        } else {
+          val = 128;
         }
+        this.imgdata.data[idx0] = val;
+        this.imgdata.data[idx0+1] = val;
+        this.imgdata.data[idx0+2] = val;
+        this.imgdata.data[idx0+3] = 255;
       }
     }
-    return this.div;
+    this.context.putImageData(this.imgdata,65,65);
+    this.leftKnob.draw();
+    this.rightKnob.draw();
   }
 
   // update this.div to reflect altered internal state
   update() {
-    for(let i=0; i<this.height; i++) {
-      for(let j=0; j<this.width; j++) {
-        this.updatePixel(i,j);
+    for(let i=0; i<Sketch.pxh()*this.height; i++) {
+      for(let j= 0; j < Sketch.pxw()*this.width; j++) {
+        let idx0 = (i*Sketch.pxw()*this.width+j)*4;
+        let val;
+        if( this.image[Math.floor(i/Sketch.pxh())][Math.floor(j/Sketch.pxw())] === 1) {
+          val = 0;
+        } else {
+          val = 128;
+        }
+        this.imgdata.data[idx0] = val;
+        this.imgdata.data[idx0+1] = val;
+        this.imgdata.data[idx0+2] = val;
+        this.imgdata.data[idx0+3] = 255;
       }
     }
+    this.context.putImageData(this.imgdata,65,65);
+    this.leftKnob.draw();
+    this.rightKnob.draw();
   }
 
-  // update the rendering of pixel at (i,j)
-  updatePixel(i,j) {
-    let pxDiv = document.querySelector(`#p${i}_${j}`);
-    if(pxDiv && (this.image[i][j] === 0)) {
-      pxDiv.style = `display:none;`;
-    } else if(pxDiv && (this.image[i][j] === 1)) {
-      pxDiv.style = Sketch.pixelStyleString(i,j,Sketch.setColor());
-    } else { // pxDiv is null
-      if(this.image[i][j] === 1) {
-        pxDiv = document.createElement("div");
-        pxDiv.id = `p${i}_${j}`;
-        pxDiv.style = Sketch.pixelStyleString(i,j,Sketch.setColor());
-        this.div.append(pxDiv);
-      }
-    }
-  }
 
   // increment/decrement pointer X position
   incrementX() {
     this.image[this.pointerY][this.pointerX] = 1;
-    this.updatePixel(this.pointerY,this.pointerX);
+    this.update();
     this.pointerX = Math.min(this.pointerX+1,this.width-1);
   }
   decrementX() {
     this.image[this.pointerY][this.pointerX] = 1;
-    this.updatePixel(this.pointerY,this.pointerX);
+    this.update();
     this.pointerX = Math.max(this.pointerX-1,0);
   }
 
   // increment/decrement pointer Y position
   incrementY() {
     this.image[this.pointerY][this.pointerX] = 1;
-    this.updatePixel(this.pointerY,this.pointerX);
+    this.update();
     this.pointerY = Math.min(this.pointerY+1,this.height-1);
   }
   decrementY() {
     this.image[this.pointerY][this.pointerX] = 1;
-    this.updatePixel(this.pointerY,this.pointerX);
+    this.update();
     this.pointerY = Math.max(this.pointerY-1,0);
   }
 }
@@ -162,7 +212,7 @@ function postSketch(userId) {
     headers: {'Content-Type': 'application/json',
               'Accept': 'application/json',
               'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content },
-    body: JSON.stringify( Object.assign(pageSketch.generateData(),{user_id:parseInt(userId)}) )
+    body: JSON.stringify( Object.assign(pageSketch.generateData(),{user_id:userId}) )
   })
 }
 
@@ -180,9 +230,84 @@ function patchSketch(sketchId) {
 // delete current sketch
 function deleteSketch(sketchId) {
   return fetch(`${baseUrl}/sketches/${sketchId}`, { method:"DELETE",
-  headers:{'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content } });
+  headers: {'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content} });
 }
 
+
+
+//////////////////////////////////////////////
+// mouse listeners
+//////////////////////////////////////////////
+
+document.querySelector("#es").addEventListener("mousedown", e=> {
+  e.preventDefault();
+  let mousex = e.pageX - document.querySelector("#es").offsetLeft;
+  let mousey = e.pageY - document.querySelector("#es").offsetTop;
+  if( Math.sqrt( Math.pow(mousex-65,2) + Math.pow(mousey-619,2) ) < 48 ) {
+    mouseDownOnLeftKnob = true;
+  }
+  if( Math.sqrt( Math.pow(mousex-889,2) + Math.pow(mousey-619,2) ) < 48 ) {
+    mouseDownOnRightKnob = true;
+  }
+});
+
+function angle(x,y) {
+  if(x>0) {
+    return Math.atan(y/x);
+  }
+  if((x<0) && (y>0)) {
+    return Math.PI - Math.atan(Math.abs(y/x));
+  }
+  if((x<0)&&(y<0)) {
+    return -Math.PI + Math.atan(y/x);
+  }
+}
+
+document.querySelector("#es").addEventListener("mousemove", e => {
+  e.preventDefault();
+  if(mouseDownOnLeftKnob) {
+    let mousex = e.pageX - document.querySelector("#es").offsetLeft;
+    let mousey = e.pageY - document.querySelector("#es").offsetTop;
+    let theta0 = angle(mousex-65,mousey-619)
+    let theta1 = angle(mousex+e.movementX-65,mousey+e.movementY-619);
+    let dtheta = theta1 - theta0;
+    if(Math.abs(dtheta) < Math.PI) {
+      pageSketch.leftKnob.theta += dtheta;
+      if(dtheta > 0) {
+        pageSketch.incrementY();
+      } else {
+        pageSketch.decrementY();
+      }
+    }
+  }
+  if(mouseDownOnRightKnob) {
+    let mousex = e.pageX - document.querySelector("#es").offsetLeft;
+    let mousey = e.pageY - document.querySelector("#es").offsetTop;
+    let theta0 = angle(mousex-889,mousey-619)
+    let theta1 = angle(mousex+e.movementX-889,mousey+e.movementY-619);
+    let dtheta = theta1 - theta0;
+    if(Math.abs(dtheta) < Math.PI) {
+      pageSketch.rightKnob.theta += dtheta;
+      if(dtheta > 0) {
+        pageSketch.incrementX();
+      } else {
+        pageSketch.decrementX();
+      }
+    }
+  }
+});
+
+document.querySelector("#es").addEventListener("mouseup", e => {
+  e.preventDefault();
+  mouseDownOnLeftKnob = false;
+  mouseDownOnRightKnob = false;
+});
+
+document.querySelector("#es").addEventListener("mouseleave", e=> {
+  e.preventDefault();
+  mouseDownOnLeftKnob = false;
+  mouseDownOnRightKnob = false;
+});
 
 //////////////////////////////////////////////
 // globals
@@ -193,13 +318,15 @@ let keycodes = {};
 //const baseUrl = "http://localhost:3000/api/v1"
 const baseUrl = "https://etchafetch.herokuapp.com/api/v1"
 //const baseUrl = "https://intense-island-31073.herokuapp.com/api/v1/sketches"
-let knob;
-let knob2;
 let epsilon = 0.01;
 let curUserId = null;
 
 const width = 412;
 const height = 277;
+
+let mouseDownOnLeftKnob = false;
+let mouseDownOnRightKnob = false;
+
 
 //////////////////////////////////////////////
 // document-level event listeners
@@ -213,23 +340,23 @@ document.addEventListener('keydown', e=>{
       switch(code) {
         case 'ArrowUp':
         case 'KeyW':
+          pageSketch.leftKnob.theta -= 0.05;
           pageSketch.decrementY();
-          knob2.value -= epsilon;
           break;
         case 'ArrowDown':
         case 'KeyS':
+          pageSketch.leftKnob.theta += 0.05;
           pageSketch.incrementY();
-          knob2.value += epsilon;
           break;
         case 'ArrowLeft':
         case 'KeyA':
+          pageSketch.rightKnob.theta -= 0.05;
           pageSketch.decrementX();
-          knob.value -= epsilon;
           break;
         case 'ArrowRight':
         case 'KeyD':
+          pageSketch.rightKnob.theta += 0.05;
           pageSketch.incrementX();
-          knob.value += epsilon;
           break;
       }
     }
@@ -242,10 +369,10 @@ document.addEventListener('keyup',e=>{
 });
 
 function renderSketchesDropdown(userId) {
-  fetch(`${baseUrl}/users/${parseInt(userId)}`).then(res=>res.json())
+  fetch(`${baseUrl}/users/${userId}`).then(res=>res.json())
   .then(data=> {
     let sketchesDropdownDiv = document.querySelector("#sketchesDropdown")
-    sketchesDropdownDiv.innerHTML = "";//FIXME
+    sketchesDropdownDiv.innerHTML = "";
     let sketchesDropdown = document.createElement("select");
     sketchesDropdownDiv.append(sketchesDropdown);
     let newChoice = document.createElement("option");
@@ -278,7 +405,7 @@ let updateButton = document.querySelector("#updateButton");
 updateButton.addEventListener("click",e=>{
   let sketchesDropdown = document.querySelector("#sketchesDropdown").children[0];
   if(sketchesDropdown.value === "new") {
-    postSketch(curUserId).then(data=>renderSketchesDropdown(parseInt(curUserId)));
+    postSketch(curUserId).then(data=>renderSketchesDropdown(curUserId));
   } else {
     let id = parseInt(sketchesDropdown.value);
     patchSketch(id);
@@ -290,7 +417,7 @@ deleteButton.addEventListener("click",e=>{
   let sketchesDropdown = document.querySelector("#sketchesDropdown").children[0];
   if(!(sketchesDropdown.value === "new")) {
     let id = parseInt(sketchesDropdown.value);
-    deleteSketch(id).then( data=>renderSketchesDropdown(parseInt(curUserId)));
+    deleteSketch(id).then( data=>renderSketchesDropdown(curUserId));
 
   }
   pageSketch.resetData({width:width,height:height,data:Sketch.zeroData(width,height),
@@ -300,7 +427,7 @@ deleteButton.addEventListener("click",e=>{
 
 let deleteUserButton = document.querySelector("#deleteUserButton");
 deleteUserButton.addEventListener("click",e=>{
-  fetch(`${baseUrl}/users/${parseInt(curUserId)}`,{method:"DELETE",headers:{'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content}}).then(res=>{
+  fetch(`${baseUrl}/users/${curUserId}`,{method:"DELETE",headers:{'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content}}).then(res=>{
     setTimeout(getUsers,3000);
   });
   curUserId = null;
@@ -310,9 +437,10 @@ deleteUserButton.addEventListener("click",e=>{
 let userCreateButton = document.querySelector("#userCreateButton");
 userCreateButton.addEventListener("click", e=>{
   e.preventDefault();
-  let username = document.querySelector("#userCreate").value.replace(/[^a-zA-Z0-9]/g,"");
+  let username = document.querySelector("#userCreate").value;
   document.querySelector("#userCreate").value = "";
-  fetch(`${baseUrl}/users`, {method:"POST",headers:{'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,"Content-Type":"application/json"},
+  fetch(`${baseUrl}/users`, {method:"POST",
+    headers:{"Content-Type":"application/json",'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content},
     body:JSON.stringify({username:username}) })
   .then( res =>  setTimeout( getUsers, 3000 ) );
   document.querySelector("#sketchesDropdown").innerHTML = "";
@@ -328,7 +456,7 @@ function getUsers() {
     fetch(`${baseUrl}/users`).then(res=>res.json()).then(obj=>{
       allUsers = obj
       allUsers.forEach(user=>{
-        dropDownMenu.innerHTML = dropDownMenu.innerHTML + `<a class="dropdown-item" href="#" data-id="${parseInt(user.id)}">${user.username.replace(/[^a-zA-Z0-9]/g,"")}</a>`
+        dropDownMenu.innerHTML = dropDownMenu.innerHTML + `<a class="dropdown-item" href="#" data-id="${user.id}">${user.username}</a>`
         
            // dropdown menu interactions--------------------------------------
         let allAs = document.querySelectorAll('a')
@@ -349,78 +477,23 @@ function getUsers() {
 
 document.addEventListener("DOMContentLoaded", e=>{
 
-
-  let knobVal = 0.0;
-  let knob2Val = 0.0;
-
   pageSketch = new Sketch( {width:width,height:height,data:Sketch.zeroData(width,height),
       pointerX:Math.round(width/2), pointerY:Math.round(height/2)});
-  let gridDiv = document.getElementById('grid')
 
   
-  let resziedRender = pageSketch.render()
-  resziedRender.style.width = `${(parseInt(resziedRender.style.width.split("px")[0])+130)}px`
-  resziedRender.style.height = `${(parseInt(resziedRender.style.height.split("px")[0])+130)}px`
-  
-  knob=document.createElement('x-knob')
-  knob2=document.createElement('x-knob')
-  knob.style="position:absolute; right:-3rem; top:31rem;z-index:1;"
-  knob.setAttribute("class","big")
+  pageSketch.render()
 
-  knob2.style="position:absolute; left:-3rem; top:31rem;z-index:1;"
-  knob2.setAttribute("class","big")
-
-  knob.addEventListener("input", e=>{
-    if(e.target.value-knobVal > epsilon) {
-      pageSketch.incrementX();
-      knobVal = e.target.value;
-    } else if(knobVal-e.target.value > epsilon) {
-      pageSketch.decrementX();
-      knobVal = e.target.value;
-    }
-  });
-
-  knob2.addEventListener("input", e=>{
-    if(e.target.value-knob2Val > epsilon){
-      pageSketch.incrementY();
-      knob2Val = e.target.value;
-    } else if(knob2Val-e.target.value > epsilon) {
-      pageSketch.decrementY();
-      knob2Val = e.target.value;
-    }
-  });
-  
-  resziedRender.append(knob)
-  resziedRender.append(knob2)
-  
-  
-   gridDiv.append(resziedRender);
-   
-   
-
-   
-
-  
   getUsers();
-  
-  
-
- 
-  
-   
 // DOMContentLoaded--------------------------------------------------------------
 });
 
 
 document.getElementById("deleteButton").addEventListener("mousedown",function(e){
-  var element = document.getElementById("gd");
-  element.classList.add("shake");
-
+  document.getElementById("es").classList.add("shake");
 })
 
 document.getElementById("deleteButton").addEventListener("mouseup",function(e){
-  var element = document.getElementById("gd");
-  element.classList.remove("shake");
-
-
+  document.getElementById("es").classList.remove("shake");
 })
+
+//document.addEventListener('scroll', function() { window.scrollTo(0,0) } );
